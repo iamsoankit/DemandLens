@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DemandLens — Demand & Pricing Intelligence</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f6f7f9;
+            --card: #ffffff;
+            --border: #e5e7eb;
+            --text: #111827;
+            --muted: #6b7280;
+            --soft: #f9fafb;
+            --green: #15803d;
+            --green-bg: #ecfdf3;
+            --blue: #2563eb;
+            --dark: #111827;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+                Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .container {
+            width: min(1180px, calc(100% - 40px));
+            margin: 0 auto;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .nav {
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: #111827;
+            color: white;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .brand h1 {
+            font-size: 17px;
+            letter-spacing: -0.3px;
+        }
+
+        .brand span {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: -2px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+        }
+
+        main {
+            padding: 42px 0 70px;
+        }
+
+        .hero {
+            margin-bottom: 30px;
+        }
+
+        .eyebrow {
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .hero h2 {
+            font-size: clamp(30px, 4vw, 45px);
+            line-height: 1.08;
+            letter-spacing: -1.5px;
+            max-width: 720px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            margin-top: 13px;
+            max-width: 690px;
+            font-size: 15px;
+        }
+
+        .status {
+            margin-top: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--green-bg);
+            color: var(--green);
+            border: 1px solid #bbf7d0;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .metrics {
+            grid-template-columns: repeat(4, 1fr);
+            margin-bottom: 18px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            padding: 20px;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 27px;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+        }
+
+        .metric-note {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        .positive {
+            color: var(--green);
+        }
+
+        .two-col {
+            grid-template-columns: 1.55fr 1fr;
+            margin-bottom: 18px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .chart-wrap {
+            height: 315px;
+            position: relative;
+        }
+
+        .select {
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 7px;
+            padding: 7px 9px;
+            color: var(--text);
+            font-size: 12px;
+            outline: none;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--muted);
+            font-weight: 600;
+            background: var(--soft);
+        }
+
+        th, td {
+            padding: 10px 11px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .feature-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 13px;
+        }
+
+        .feature-name {
+            width: 125px;
+            font-size: 11px;
+            color: #374151;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bar-bg {
+            flex: 1;
+            height: 7px;
+            background: #eef0f3;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        .feature-value {
+            width: 42px;
+            text-align: right;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .pricing {
+            margin-top: 18px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: 0.8fr 1.2fr;
+            gap: 22px;
+        }
+
+        .product-box {
+            background: var(--soft);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .product-label {
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+        }
+
+        .product-value {
+            font-size: 15px;
+            font-weight: 650;
+        }
+
+        .product-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .recommendation {
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .recommendation-tag {
+            color: var(--green);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .recommendation-price {
+            font-size: 32px;
+            font-weight: 750;
+            letter-spacing: -1px;
+            margin-top: 4px;
+        }
+
+        .recommendation p {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .scenario-table td:last-child,
+        .scenario-table th:last-child {
+            text-align: right;
+        }
+
+        .highlight {
+            font-weight: 700;
+        }
+
+        .methodology {
+            margin-top: 18px;
+        }
+
+        .method-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .method h4 {
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .method p {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 24px 0;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .loading {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media (max-width: 850px) {
+            .metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .two-col,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .method-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .container {
+                width: min(100% - 24px, 1180px);
+            }
+
+            main {
+                padding-top: 28px;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .metric-value {
+                font-size: 22px;
+            }
+
+            .hero h2 {
+                font-size: 31px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="container nav">
+        <div class="brand">
+            <div class="logo">DL</div>
+            <div>
+                <h1>DemandLens</h1>
+                <span>Demand & Pricing Intelligence</span>
+            </div>
+        </div>
+
+        <a
+            class="nav-link"
+            href="https://github.com/iamsoankit/DemandLens"
+            target="_blank"
+        >
+            View source ↗
+        </a>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+
+        <section class="hero">
+            <div class="eyebrow">Retail analytics</div>
+
+            <h2>
+                Forecast demand. Understand pricing.
+                Make better decisions.
+            </h2>
+
+            <p>
+                DemandLens combines time-series demand features, gradient
+                boosting and price-response analysis to turn historical
+                retail data into actionable forecasting and pricing insights.
+            </p>
+
+            <div class="status">
+                <span class="dot"></span>
+                Model evaluation complete
+            </div>
+        </section>
+
+
+        <!-- KPI CARDS -->
+
+        <section class="grid metrics">
+
+            <div class="card">
+                <div class="metric-label">Model MAE</div>
+                <div class="metric-value" id="model-mae">—</div>
+                <div class="metric-note">Lower is better</div>
+            </div>
+
+            <div class="card">
+                <div class="metric-label">Model RMSE</div>
+                <div class="metric-value" id="model-rmse">—</div>
+                <div class="metric-note">Forecast error</div>
+            </div>
+
+            <div class="card">
+                <div class="metric-label">WAPE</div>
+                <div class="metric-value" id="model-wape">—</div>
+                <div class="metric-note">Weighted absolute percentage error</div>
+            </div>
+
+            <div class="card">
+                <div class="metric-label">Improvement vs baseline</div>
+                <div class="metric-value positive" id="improvement">—</div>
+                <div class="metric-note">7-day lag baseline</div>
+            </div>
+
+        </section>
+
+
+        <!-- FORECAST + MODEL PERFORMANCE -->
+
+        <section class="grid two-col">
+
+            <div class="card">
+
+                <div class="section-head">
+                    <div>
+                        <div class="section-title">Demand forecast</div>
+                        <div class="section-subtitle">
+                            Actual vs model-predicted demand
+                        </div>
+                    </div>
+
+                    <select class="select" id="item-select">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+
+                <div class="chart-wrap">
+                    <canvas id="forecast-chart"></canvas>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="section-head">
+                    <div>
+                        <div class="section-title">Model performance</div>
+                        <div class="section-subtitle">
+                            Baseline comparison
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>MAE</th>
+                                <th>RMSE</th>
+                                <th>WAPE</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="metrics-table">
+                            <tr>
+                                <td colspan="4" class="loading">
+                                    Loading metrics...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div style="margin-top:22px">
+
+                    <div class="section-title">
+                        What the result means
+                    </div>
+
+                    <p
+                        id="model-summary"
+                        style="
+                            color:#6b7280;
+                            font-size:12px;
+                            margin-top:7px;
+                        "
+                    >
+                        Loading evaluation results...
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- FEATURE IMPORTANCE -->
+
+        <section class="card">
+
+            <div class="section-head">
+                <div>
+                    <div class="section-title">
+                        What drives the forecast?
+                    </div>
+
+                    <div class="section-subtitle">
+                        LightGBM feature importance
+                    </div>
+                </div>
+            </div>
+
+            <div id="features">
+                <div class="loading">
+                    Loading feature importance...
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- PRICING -->
+
+        <section class="card pricing">
+
+            <div class="section-head">
+                <div>
+                    <div class="section-title">
+                        Pricing intelligence
+                    </div>
+
+                    <div class="section-subtitle">
+                        Scenario analysis using model demand and
+                        assumed price elasticity
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="pricing-grid">
+
+                <div>
+
+                    <div class="product-box">
+
+                        <div class="product-label">
+                            Selected product
+                        </div>
+
+                        <div
+                            class="product-value"
+                            id="pricing-item"
+                        >
+                            —
+                        </div>
+
+                        <div class="product-row">
+
+                            <div>
+                                <div class="product-label">
+                                    Store
+                                </div>
+
+                                <div
+                                    class="product-value"
+                                    id="pricing-store"
+                                >
+                                    —
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="product-label">
+                                    Current price
+                                </div>
+
+                                <div
+                                    class="product-value"
+                                    id="pricing-current"
+                                >
+                                    —
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="product-row">
+
+                            <div>
+                                <div class="product-label">
+                                    Predicted demand
+                                </div>
+
+                                <div
+                                    class="product-value"
+                                    id="pricing-demand"
+                                >
+                                    —
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="product-label">
+                                    Date
+                                </div>
+
+                                <div
+                                    class="product-value"
+                                    id="pricing-date"
+                                >
+                                    —
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="recommendation">
+
+                        <div class="recommendation-tag">
+                            Best scenario
+                        </div>
+
+                        <div
+                            class="recommendation-price"
+                            id="recommended-price"
+                        >
+                            —
+                        </div>
+
+                        <p id="recommendation-text">
+                            Loading recommendation...
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="table-wrap">
+
+                        <table class="scenario-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Elasticity</th>
+                                    <th>Price change</th>
+                                    <th>Price</th>
+                                    <th>Demand</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="pricing-table">
+                                <tr>
+                                    <td colspan="5" class="loading">
+                                        Loading pricing scenarios...
+                                    </td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- METHODOLOGY -->
+
+        <section class="card methodology">
+
+            <div class="section-head">
+                <div>
+                    <div class="section-title">
+                        Methodology
+                    </div>
+
+                    <div class="section-subtitle">
+                        How DemandLens is built
+                    </div>
+                </div>
+            </div>
+
+            <div class="method-grid">
+
+                <div class="method">
+                    <h4>Demand features</h4>
+                    <p>
+                        Lagged demand, rolling averages, rolling volatility,
+                        calendar effects and price signals are used to
+                        represent recent demand behavior.
+                    </p>
+                </div>
+
+                <div class="method">
+                    <h4>Forecasting</h4>
+                    <p>
+                        A LightGBM regression model predicts next-period
+                        demand and is evaluated against a simple 7-day
+                        lag baseline.
+                    </p>
+                </div>
+
+                <div class="method">
+                    <h4>Pricing analysis</h4>
+                    <p>
+                        Candidate prices are evaluated under multiple
+                        elasticity assumptions to compare expected demand
+                        and revenue.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+</main>
+
+
+<footer>
+    <div class="container">
+        DemandLens · Retail demand forecasting and pricing analysis
+    </div>
+</footer>
+
+
+<script>
+    let predictions = [];
+    let metrics = [];
+    let featureImportance = [];
+    let pricingScenarios = [];
+    let pricingRecommendations = [];
+
+    let forecastChart = null;
+
+
+    function parseCSV(text) {
+
+        const rows = [];
+        let row = [];
+        let value = "";
+        let insideQuotes = false;
+
+        for (let i = 0; i < text.length; i++) {
+
+            const char = text[i];
+            const next = text[i + 1];
+
+            if (char === '"' && insideQuotes && next === '"') {
+                value += '"';
+                i++;
+            }
+
+            else if (char === '"') {
+                insideQuotes = !insideQuotes;
+            }
+
+            else if (char === "," && !insideQuotes) {
+                row.push(value);
+                value = "";
+            }
+
+            else if ((char === "\n" || char === "\r") && !insideQuotes) {
+
+                if (char === "\r" && next === "\n") {
+                    i++;
+                }
+
+                row.push(value);
+                value = "";
+
+                if (row.some(v => v !== "")) {
+                    rows.push(row);
+                }
+
+                row = [];
+            }
+
+            else {
+                value += char;
+            }
+        }
+
+        if (value !== "" || row.length) {
+            row.push(value);
+            rows.push(row);
+        }
+
+        if (!rows.length) {
+            return [];
+        }
+
+        const headers = rows[0];
+
+        return rows.slice(1).map(values => {
+
+            const obj = {};
+
+            headers.forEach((header, index) => {
+                obj[header.trim()] = (values[index] || "").trim();
+            });
+
+            return obj;
+        });
+    }
+
+
+    async function loadCSV(path) {
+
+        const response = await fetch(path);
+
+        if (!response.ok) {
+            throw new Error(`Could not load ${path}`);
+        }
+
+        return parseCSV(await response.text());
+    }
+
+
+    function number(value, decimals = 2) {
+
+        const n = Number(value);
+
+        if (!Number.isFinite(n)) {
+            return "—";
+        }
+
+        return n.toFixed(decimals);
+    }
+
+
+    function percent(value, decimals = 1) {
+
+        const n = Number(value);
+
+        if (!Number.isFinite(n)) {
+            return "—";
+        }
+
+        return (n * 100).toFixed(decimals) + "%";
+    }
+
+
+    function money(value) {
+
+        const n = Number(value);
+
+        if (!Number.isFinite(n)) {
+            return "—";
+        }
+
+        return "$" + n.toFixed(2);
+    }
+
+
+    function setupMetrics() {
+
+        const baseline = metrics.find(
+            x => x.model === "7_day_baseline"
+        );
+
+        const model = metrics.find(
+            x => x.model === "lightgbm"
+        );
+
+        if (!model) {
+            return;
+        }
+
+        document.getElementById("model-mae").textContent =
+            number(model.mae, 3);
+
+        document.getElementById("model-rmse").textContent =
+            number(model.rmse, 3);
+
+        document.getElementById("model-wape").textContent =
+            percent(model.wape);
+
+        if (baseline) {
+
+            const improvement =
+                ((Number(baseline.mae) - Number(model.mae))
+                    / Number(baseline.mae));
+
+            document.getElementById("improvement").textContent =
+                percent(improvement);
+        }
+
+
+        const table = document.getElementById("metrics-table");
+
+        table.innerHTML = "";
+
+        metrics.forEach(row => {
+
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${row.model === "lightgbm"
+                    ? "LightGBM"
+                    : "7-day baseline"}</td>
+
+                <td>${number(row.mae, 3)}</td>
+
+                <td>${number(row.rmse, 3)}</td>
+
+                <td>${percent(row.wape)}</td>
+            `;
+
+            table.appendChild(tr);
+        });
+
+
+        if (baseline) {
+
+            const improvement =
+                ((Number(baseline.mae) - Number(model.mae))
+                    / Number(baseline.mae)) * 100;
+
+            document.getElementById("model-summary").textContent =
+                `The LightGBM model reduces MAE by ${improvement.toFixed(1)}% `
+                + `versus the 7-day lag baseline on the held-out evaluation period.`;
+        }
+    }
+
+
+    function setupFeatures() {
+
+        const container =
+            document.getElementById("features");
+
+        container.innerHTML = "";
+
+        const top = featureImportance
+            .slice()
+            .sort((a, b) =>
+                Number(b.importance) - Number(a.importance)
+            )
+            .slice(0, 10);
+
+        if (!top.length) {
+            container.innerHTML =
+                `<div class="loading">No feature data available.</div>`;
+            return;
+        }
+
+        const max = Math.max(
+            ...top.map(x => Number(x.importance))
+        );
+
+        top.forEach(item => {
+
+            const width =
+                (Number(item.importance) / max) * 100;
+
+            const row = document.createElement("div");
+
+            row.className = "feature-bar";
+
+            row.innerHTML = `
+                <div class="feature-name">
+                    ${item.feature}
+                </div>
+
+                <div class="bar-bg">
+                    <div
+                        class="bar"
+                        style="width:${width}%"
+                    ></div>
+                </div>
+
+                <div class="feature-value">
+                    ${number(item.importance, 0)}
+                </div>
+            `;
+
+            container.appendChild(row);
+        });
+    }
+
+
+    function getItems() {
+
+        return [
+            ...new Set(
+                predictions.map(row => row.item_id)
+            )
+        ];
+    }
+
+
+    function setupItemSelector() {
+
+        const select =
+            document.getElementById("item-select");
+
+        const items = getItems();
+
+        select.innerHTML = "";
+
+        items.forEach(item => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = item;
+            option.textContent = item;
+
+            select.appendChild(option);
+        });
+
+        if (items.length) {
+            updateForecast(items[0]);
+        }
+
+        select.addEventListener("change", () => {
+            updateForecast(select.value);
+        });
+    }
+
+
+    function updateForecast(itemId) {
+
+        const rows = predictions
+            .filter(row => row.item_id === itemId)
+            .slice()
+            .sort((a, b) =>
+                a.date.localeCompare(b.date)
+            )
+            .slice(-28);
+
+
+        const labels = rows.map(row => row.date);
+
+        const actual = rows.map(row =>
+            Number(row.actual_demand)
+        );
+
+        const predicted = rows.map(row =>
+            Number(row.predicted_demand)
+        );
+
+
+        const ctx =
+            document.getElementById("forecast-chart");
+
+
+        if (forecastChart) {
+            forecastChart.destroy();
+        }
+
+
+        forecastChart = new Chart(ctx, {
+
+            type: "line",
+
+            data: {
+
+                labels,
+
+                datasets: [
+
+                    {
+                        label: "Actual demand",
+                        data: actual,
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        tension: 0.25
+                    },
+
+                    {
+                        label: "Predicted demand",
+                        data: predicted,
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 1,
+                        tension: 0.25
+                    }
+
+                ]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                interaction: {
+                    mode: "index",
+                    intersect: false
+                },
+
+                plugins: {
+
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            boxWidth: 18,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+
+                },
+
+                scales: {
+
+                    x: {
+                        ticks: {
+                            maxTicksLimit: 7,
+                            font: {
+                                size: 9
+                            }
+                        },
+
+                        grid: {
+                            display: false
+                        }
+                    },
+
+                    y: {
+                        beginAtZero: true,
+
+                        ticks: {
+                            font: {
+                                size: 9
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+        });
+    }
+
+
+    function setupPricing() {
+
+        if (!pricingScenarios.length) {
+            return;
+        }
+
+
+        let selected = pricingRecommendations[0];
+
+        if (!selected) {
+
+            selected =
+                pricingScenarios
+                    .slice()
+                    .sort(
+                        (a, b) =>
+                            Number(b.estimated_revenue)
+                            - Number(a.estimated_revenue)
+                    )[0];
+        }
+
+
+        const date =
+            selected.date ||
+            "2016-04-23";
+
+        const item =
+            selected.item_id ||
+            "HOBBIES_1_030";
+
+        const store =
+            selected.store_id ||
+            "WI_3";
+
+
+        document.getElementById("pricing-item").textContent =
+            item;
+
+        document.getElementById("pricing-store").textContent =
+            store;
+
+        document.getElementById("pricing-date").textContent =
+            date;
+
+
+        const currentPrice =
+            Number(
+                selected.current_price ||
+                selected.base_price ||
+                selected.candidate_price /
+                (1 + Number(selected.price_change || 0))
+            );
+
+
+        const currentDemand =
+            Number(
+                selected.predicted_demand ||
+                selected.base_demand ||
+                selected.estimated_demand
+            );
+
+
+        document.getElementById("pricing-current").textContent =
+            money(currentPrice);
+
+        document.getElementById("pricing-demand").textContent =
+            number(currentDemand, 2);
+
+
+        const best =
+            pricingRecommendations
+                .slice()
+                .sort(
+                    (a, b) =>
+                        Number(b.estimated_revenue)
+                        - Number(a.estimated_revenue)
+                )[0]
+            ||
+            pricingScenarios
+                .slice()
+                .sort(
+                    (a, b) =>
+                        Number(b.estimated_revenue)
+                        - Number(a.estimated_revenue)
+                )[0];
+
+
+        if (best) {
+
+            document.getElementById("recommended-price").textContent =
+                money(best.candidate_price);
+
+            document.getElementById("recommendation-text").textContent =
+                `${Number(best.price_change) >= 0 ? "+" : ""}`
+                + `${(Number(best.price_change) * 100).toFixed(0)}% price change`
+                + ` → estimated revenue ${money(best.estimated_revenue)} `
+                + `under elasticity ${best.elasticity}.`;
+        }
+
+
+        const table =
+            document.getElementById("pricing-table");
+
+        table.innerHTML = "";
+
+
+        pricingScenarios.forEach(row => {
+
+            const tr =
+                document.createElement("tr");
+
+            tr.innerHTML = `
+
+                <td>${row.elasticity}</td>
+
+                <td>
+                    ${Number(row.price_change) >= 0 ? "+" : ""}
+                    ${(Number(row.price_change) * 100).toFixed(0)}%
+                </td>
+
+                <td>
+                    ${money(row.candidate_price)}
+                </td>
+
+                <td>
+                    ${number(row.estimated_demand, 2)}
+                </td>
+
+                <td class="highlight">
+                    ${money(row.estimated_revenue)}
+                </td>
+            `;
+
+            table.appendChild(tr);
+        });
+    }
+
+
+    async function init() {
+
+        try {
+
+            [
+                metrics,
+                predictions,
+                featureImportance,
+                pricingScenarios,
+                pricingRecommendations
+
+            ] = await Promise.all([
+
+                loadCSV("results/metrics.csv"),
+
+                loadCSV("results/predictions.csv"),
+
+                loadCSV("results/feature_importance.csv"),
+
+                loadCSV("results/pricing_scenarios.csv"),
+
+                loadCSV("results/pricing_recommendations.csv")
+
+            ]);
+
+
+            setupMetrics();
+
+            setupFeatures();
+
+            setupItemSelector();
+
+            setupPricing();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            document.querySelector(".status").innerHTML =
+                `<span class="dot"></span>
+                 Could not load dashboard data`;
+
+            document.querySelector(".status").style.color =
+                "#b91c1c";
+        }
+    }
+
+
+    init();
+</script>
+
+</body>
+</html>
