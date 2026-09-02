@@ -1,0 +1,3 @@
+price_direction,observations,avg_price_change,median_price_change,avg_demand_change,median_demand_change
+price_decrease,44,-0.1977799510295874,-0.14662720650042027,-0.8318181818181819,-1.0
+price_increase,46,0.0904854516263587,0.04347826086956513,-0.5997584541062801,-1.0
